@@ -1,0 +1,304 @@
+{
+  "firstLayout": "",
+  "gdVersion": {
+    "build": 98,
+    "major": 4,
+    "minor": 0,
+    "revision": 0
+  },
+  "properties": {
+    "adMobAppId": "",
+    "adaptGameResolutionAtRuntime": true,
+    "folderProject": false,
+    "linuxExecutableFilename": "",
+    "macExecutableFilename": "",
+    "orientation": "landscape",
+    "packageName": "com.example.gamename",
+    "projectFile": "/Users/joshualevin/Documents/GDevelop Projects/gdevelop-multiplayer-sample/Game/game.json",
+    "scaleMode": "linear",
+    "sizeOnStartupMode": "adaptWidth",
+    "useExternalSourceFiles": false,
+    "version": "1.0.0",
+    "winExecutableFilename": "",
+    "winExecutableIconFile": "",
+    "name": "Project",
+    "author": "",
+    "windowWidth": 800,
+    "windowHeight": 600,
+    "latestCompilationDirectory": "",
+    "maxFPS": 60,
+    "minFPS": 20,
+    "verticalSync": false,
+    "platformSpecificAssets": {},
+    "loadingScreen": {
+      "showGDevelopSplash": true
+    },
+    "extensions": [
+      {
+        "name": "BuiltinObject"
+      },
+      {
+        "name": "BuiltinAudio"
+      },
+      {
+        "name": "BuiltinVariables"
+      },
+      {
+        "name": "BuiltinTime"
+      },
+      {
+        "name": "BuiltinMouse"
+      },
+      {
+        "name": "BuiltinKeyboard"
+      },
+      {
+        "name": "BuiltinJoystick"
+      },
+      {
+        "name": "BuiltinCamera"
+      },
+      {
+        "name": "BuiltinWindow"
+      },
+      {
+        "name": "BuiltinFile"
+      },
+      {
+        "name": "BuiltinNetwork"
+      },
+      {
+        "name": "BuiltinScene"
+      },
+      {
+        "name": "BuiltinAdvanced"
+      },
+      {
+        "name": "Sprite"
+      },
+      {
+        "name": "BuiltinCommonInstructions"
+      },
+      {
+        "name": "BuiltinCommonConversions"
+      },
+      {
+        "name": "BuiltinStringInstructions"
+      },
+      {
+        "name": "BuiltinMathematicalTools"
+      },
+      {
+        "name": "BuiltinExternalLayouts"
+      }
+    ],
+    "platforms": [
+      {
+        "name": "GDevelop JS platform"
+      }
+    ],
+    "currentPlatform": "GDevelop JS platform"
+  },
+  "resources": {
+    "resources": [
+      {
+        "alwaysLoaded": false,
+        "file": "NewObject-1.png",
+        "kind": "image",
+        "metadata": "",
+        "name": "NewObject-1.png",
+        "smoothed": true,
+        "userAdded": true
+      }
+    ],
+    "resourceFolders": []
+  },
+  "objects": [],
+  "objectsGroups": [],
+  "variables": [],
+  "layouts": [
+    {
+      "b": 255,
+      "disableInputWhenNotFocused": true,
+      "mangledName": "Game",
+      "name": "Game",
+      "oglFOV": 90,
+      "oglZFar": 500,
+      "oglZNear": 1,
+      "r": 99,
+      "standardSortMethod": true,
+      "stopSoundsOnStartup": true,
+      "title": "",
+      "v": 239,
+      "uiSettings": {
+        "grid": false,
+        "gridB": 255,
+        "gridG": 180,
+        "gridHeight": 32,
+        "gridOffsetX": 0,
+        "gridOffsetY": 0,
+        "gridR": 158,
+        "gridWidth": 32,
+        "snap": true,
+        "windowMask": false,
+        "zoomFactor": 1
+      },
+      "objectsGroups": [],
+      "variables": [],
+      "instances": [],
+      "objects": [
+        {
+          "name": "player",
+          "tags": "",
+          "type": "Sprite",
+          "updateIfNotVisible": false,
+          "variables": [],
+          "behaviors": [],
+          "animations": [
+            {
+              "name": "NewObject",
+              "useMultipleDirections": false,
+              "directions": [
+                {
+                  "looping": false,
+                  "timeBetweenFrames": 0.08,
+                  "sprites": [
+                    {
+                      "hasCustomCollisionMask": false,
+                      "image": "NewObject-1.png",
+                      "points": [],
+                      "originPoint": {
+                        "name": "origine",
+                        "x": 0,
+                        "y": 0
+                      },
+                      "centerPoint": {
+                        "automatic": true,
+                        "name": "centre",
+                        "x": 0,
+                        "y": 0
+                      },
+                      "customCollisionMask": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "disabled": false,
+          "folded": false,
+          "type": "BuiltinCommonInstructions::Standard",
+          "conditions": [
+            {
+              "type": {
+                "inverted": false,
+                "value": "DepartScene"
+              },
+              "parameters": [
+                ""
+              ],
+              "subInstructions": []
+            }
+          ],
+          "actions": [],
+          "events": [
+            {
+              "colorB": 228,
+              "colorG": 176,
+              "colorR": 74,
+              "creationTime": 0,
+              "disabled": false,
+              "folded": false,
+              "name": "Establish websocket connection",
+              "source": "",
+              "type": "BuiltinCommonInstructions::Group",
+              "events": [
+                {
+                  "disabled": false,
+                  "folded": false,
+                  "type": "BuiltinCommonInstructions::JsCode",
+                  "inlineCode": "runtimeScene.ws = new WebSocket(\"ws://localhost:5000/ws\");\nconst id = Math.floor(Math.random() * Math.floor(Number.MAX_SAFE_INTEGER))\nruntimeScene.player_id = id\nruntimeScene.ws.onopen = function (event) {\n    const data = {\n        command: \"NEW_PLAYER\",\n        player_id: runtimeScene.player_id,\n        data: {\n            x: 300,\n            y: 300\n        }\n    }\n    setTimeout(() => {\n        runtimeScene.ws.send(JSON.stringify(data))\n    }, 500); \n};",
+                  "parameterObjects": "",
+                  "useStrict": true
+                }
+              ],
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "colorB": 228,
+          "colorG": 176,
+          "colorR": 74,
+          "creationTime": 0,
+          "disabled": false,
+          "folded": false,
+          "name": "Websocket loop",
+          "source": "",
+          "type": "BuiltinCommonInstructions::Group",
+          "events": [
+            {
+              "disabled": false,
+              "folded": false,
+              "type": "BuiltinCommonInstructions::JsCode",
+              "inlineCode": "runtimeScene.ws.onmessage = function (event) {\n    const e = JSON.parse(event.data)\n    switch (e.command) {\n        case \"NEW_PLAYER\":\n            newPlayer(e)\n            break;\n        case \"MOVEMENT\":\n            movement(e)\n            break;\n        default:\n            console.log(\"unknown command: \" + e.command)\n    }\n}\n\nfunction newPlayer(event) {\n    const sprite = runtimeScene.createObject(\"player\")\n    sprite.setX(event.data.x)\n    sprite.setY(event.data.y)\n    sprite.player_id = event.player_id\n    if (runtimeScene.player_id !== sprite.player_id) {\n        sprite.setColor(\"255;100;100\")\n    }\n}\n\nfunction movement(event) {\n    const o = runtimeScene.getObjects(\"player\").find((o) => o.player_id === event.player_id)\n    if (typeof o === \"undefined\") {\n        return\n    }\n    o.setX(event.data.x)\n    o.setY(event.data.y)\n}",
+              "parameterObjects": "",
+              "useStrict": true
+            }
+          ],
+          "parameters": []
+        },
+        {
+          "colorB": 228,
+          "colorG": 176,
+          "colorR": 74,
+          "creationTime": 0,
+          "disabled": false,
+          "folded": false,
+          "name": "Player movement",
+          "source": "",
+          "type": "BuiltinCommonInstructions::Group",
+          "events": [
+            {
+              "disabled": false,
+              "folded": false,
+              "type": "BuiltinCommonInstructions::JsCode",
+              "inlineCode": "const input = runtimeScene._runtimeGame.getInputManager()\nconst player = runtimeScene.getObjects(\"player\").find((o) => o.player_id === runtimeScene.player_id)\n\nif (typeof player === \"undefined\") {\n    return \n}\n\nconst movementSpeed = 0.33 * runtimeScene.getTimeManager().getElapsedTime()\nlet x = player.getX()\nlet y = player.getY()\nif (input.isKeyPressed(37)) {\n    x -= movementSpeed\n}\n\nif (input.isKeyPressed(39)) {\n    x += movementSpeed\n}\n\nif (input.isKeyPressed(38)) {\n    y -= movementSpeed\n}\n\nif (input.isKeyPressed(40)) {\n    y += movementSpeed\n}\n\nconst update = {\n        command: \"MOVEMENT\",\n        player_id: runtimeScene.player_id,\n        data: {\n            x: x,\n            y: y\n        }\n}\nruntimeScene.ws.send(JSON.stringify(update))",
+              "parameterObjects": "",
+              "useStrict": true
+            }
+          ],
+          "parameters": []
+        }
+      ],
+      "layers": [
+        {
+          "name": "",
+          "visibility": true,
+          "cameras": [
+            {
+              "defaultSize": true,
+              "defaultViewport": true,
+              "height": 0,
+              "viewportBottom": 1,
+              "viewportLeft": 0,
+              "viewportRight": 1,
+              "viewportTop": 0,
+              "width": 0
+            }
+          ],
+          "effects": []
+        }
+      ],
+      "behaviorsSharedData": []
+    }
+  ],
+  "externalEvents": [],
+  "eventsFunctionsExtensions": [],
+  "externalLayouts": [],
+  "externalSourceFiles": []
+}
