@@ -3,7 +3,10 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"gopkg.in/olahol/melody.v1"
+	"time"
 )
+
+const lag = 150
 
 func main() {
 	r := gin.Default()
@@ -20,7 +23,10 @@ func main() {
 	})
 
 	m.HandleMessage(func(s *melody.Session, msg []byte) {
-		m.Broadcast(msg)
+		go func() {
+			time.Sleep(lag * time.Millisecond)
+			m.Broadcast(msg)
+		}()
 	})
 
 	r.Run(":5000")
