@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-const lag = 30
-const dropRate = 5
+const lag = 200
+const dropRate = 10
 var currentDrop = 0
 
 func main() {
