@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-const lag = 200
+const lag = 100
 const dropRate = 10
 var currentDrop = 0
 
