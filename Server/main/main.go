@@ -7,9 +7,7 @@ import (
 	"time"
 )
 
-const lag = 100
-const dropRate = 10
-var currentDrop = 0
+const lag = 150
 
 func main() {
 	r := gin.Default()
@@ -30,14 +28,6 @@ func main() {
 		err := json.Unmarshal(msg, &f)
 		if err != nil {
 			panic(err)
-		}
-
-		u := f.(map[string]interface{})
-		if (u["command"] != "NEW_PLAYER") && (u["command"] != "REFRESH_PLAYER") {
-			currentDrop++
-			if currentDrop % dropRate != 0 {
-				return
-			}
 		}
 
 		go func() {
