@@ -9,7 +9,7 @@ import (
 )
 
 const lag = 0
-const refreshRate = 100
+const refreshRate = 500
 var m *melody.Melody
 var playerMap = make(map[float64][]byte)
 var mutex sync.Mutex
