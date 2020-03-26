@@ -4,14 +4,19 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"gopkg.in/olahol/melody.v1"
+	"sync"
 	"time"
 )
 
-const lag = 150
+const lag = 0
+const refreshRate = 100
+var m *melody.Melody
+var playerMap = make(map[float64][]byte)
+var mutex sync.Mutex
 
 func main() {
 	r := gin.Default()
-	m := melody.New()
+	m = melody.New()
 
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -30,11 +35,33 @@ func main() {
 			panic(err)
 		}
 
+		u := f.(map[string]interface{})
+		if (u["command"] == "NEW_PLAYER") || (u["command"] == "REFRESH_PLAYER") {
+			go func() {
+				time.Sleep(lag * time.Millisecond)
+				m.Broadcast(msg)
+			}()
+			return
+		}
+		id := u["player_id"].(float64)
+		mutex.Lock()
+		playerMap[id] = msg
+		mutex.Unlock()
+	})
+
+	go sendLoop()
+	r.Run(":5000")
+}
+
+func sendLoop() {
+	time.Sleep(refreshRate * time.Millisecond)
+	mutex.Lock()
+	for _, msg := range playerMap {
 		go func() {
 			time.Sleep(lag * time.Millisecond)
 			m.Broadcast(msg)
 		}()
-	})
-
-	r.Run(":5000")
+	}
+	mutex.Unlock()
+	go sendLoop()
 }
