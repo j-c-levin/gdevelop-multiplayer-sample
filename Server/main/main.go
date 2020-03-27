@@ -9,7 +9,7 @@ import (
 )
 
 const lag = 0
-const refreshRate = 500
+const refreshRate = 1000
 var m *melody.Melody
 var playerMap = make(map[float64][]byte)
 var mutex sync.Mutex
@@ -56,11 +56,12 @@ func main() {
 func sendLoop() {
 	time.Sleep(refreshRate * time.Millisecond)
 	mutex.Lock()
-	for _, msg := range playerMap {
+	for i, msg := range playerMap {
 		go func() {
 			time.Sleep(lag * time.Millisecond)
 			m.Broadcast(msg)
 		}()
+		delete(playerMap,i)
 	}
 	mutex.Unlock()
 	go sendLoop()
