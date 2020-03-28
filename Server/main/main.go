@@ -8,8 +8,8 @@ import (
 	"time"
 )
 
-const lag = 0
-const refreshRate = 1000
+const lag = 20
+const refreshRate = 30
 var m *melody.Melody
 var playerMap = make(map[float64][]byte)
 var mutex sync.Mutex
@@ -36,6 +36,10 @@ func main() {
 		}
 
 		u := f.(map[string]interface{})
+
+		u["duration"] = refreshRate
+		msg, err = json.Marshal(u)
+
 		if (u["command"] == "NEW_PLAYER") || (u["command"] == "REFRESH_PLAYER") {
 			go func() {
 				time.Sleep(lag * time.Millisecond)
@@ -44,6 +48,9 @@ func main() {
 			return
 		}
 		id := u["player_id"].(float64)
+		if err != nil {
+			panic(err)
+		}
 		mutex.Lock()
 		playerMap[id] = msg
 		mutex.Unlock()
