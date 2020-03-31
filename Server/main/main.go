@@ -2,19 +2,30 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"gopkg.in/olahol/melody.v1"
 	"sync"
 	"time"
 )
 
-const lag = 20
-const refreshRate = 30
+var lag int
+var refreshRate int
 var m *melody.Melody
 var playerMap = make(map[float64][]byte)
 var mutex sync.Mutex
 
 func main() {
+	l := flag.Int("lag", 0, "integer for how much lag the server should emulate")
+
+	rr := flag.Int("refresh", 33, "integer for how many times the server should broadcast messages per second")
+
+	flag.Parse()
+
+	lag = *l
+	refreshRate = *rr
+
 	r := gin.Default()
 	m = melody.New()
 
@@ -42,7 +53,7 @@ func main() {
 
 		if (u["command"] == "NEW_PLAYER") || (u["command"] == "REFRESH_PLAYER") {
 			go func() {
-				time.Sleep(lag * time.Millisecond)
+				time.Sleep(time.Duration(lag) * time.Millisecond)
 				m.Broadcast(msg)
 			}()
 			return
@@ -57,15 +68,16 @@ func main() {
 	})
 
 	go sendLoop()
+	fmt.Printf("Current settings: \n lag: %d \n refresh rate: %d \n",lag,refreshRate)
 	r.Run(":5000")
 }
 
 func sendLoop() {
-	time.Sleep(refreshRate * time.Millisecond)
+	time.Sleep(time.Duration(refreshRate) * time.Millisecond)
 	mutex.Lock()
 	for i, msg := range playerMap {
 		go func() {
-			time.Sleep(lag * time.Millisecond)
+			time.Sleep(time.Duration(lag) * time.Millisecond)
 			m.Broadcast(msg)
 		}()
 		delete(playerMap,i)
