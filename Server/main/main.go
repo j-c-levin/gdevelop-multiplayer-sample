@@ -19,7 +19,7 @@ var mutex sync.Mutex
 func main() {
 	l := flag.Int("lag", 0, "integer for how much lag the server should emulate")
 
-	rr := flag.Int("refresh", 33, "integer for how many times the server should broadcast messages per second")
+	rr := flag.Int("refresh", 5, "integer for number of milliseconds between message broadcasts")
 
 	flag.Parse()
 

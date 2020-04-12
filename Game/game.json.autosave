@@ -118,10 +118,344 @@
   "variables": [],
   "layouts": [
     {
+      "b": 209,
+      "disableInputWhenNotFocused": true,
+      "mangledName": "Basic",
+      "name": "Basic",
+      "oglFOV": 90,
+      "oglZFar": 500,
+      "oglZNear": 1,
+      "r": 209,
+      "standardSortMethod": true,
+      "stopSoundsOnStartup": true,
+      "title": "",
+      "v": 209,
+      "uiSettings": {
+        "grid": false,
+        "gridB": 255,
+        "gridG": 180,
+        "gridHeight": 32,
+        "gridOffsetX": 0,
+        "gridOffsetY": 0,
+        "gridR": 158,
+        "gridWidth": 32,
+        "snap": true,
+        "windowMask": false,
+        "zoomFactor": 1
+      },
+      "objectsGroups": [],
+      "variables": [],
+      "instances": [],
+      "objects": [
+        {
+          "name": "player",
+          "tags": "",
+          "type": "Sprite",
+          "updateIfNotVisible": false,
+          "variables": [],
+          "behaviors": [
+            {
+              "name": "Tween",
+              "type": "Tween::TweenBehavior"
+            }
+          ],
+          "animations": [
+            {
+              "name": "NewObject",
+              "useMultipleDirections": false,
+              "directions": [
+                {
+                  "looping": false,
+                  "timeBetweenFrames": 0.08,
+                  "sprites": [
+                    {
+                      "hasCustomCollisionMask": false,
+                      "image": "NewObject-1.png",
+                      "points": [],
+                      "originPoint": {
+                        "name": "origine",
+                        "x": 0,
+                        "y": 0
+                      },
+                      "centerPoint": {
+                        "automatic": true,
+                        "name": "centre",
+                        "x": 0,
+                        "y": 0
+                      },
+                      "customCollisionMask": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "disabled": false,
+          "folded": false,
+          "type": "BuiltinCommonInstructions::Standard",
+          "conditions": [
+            {
+              "type": {
+                "inverted": false,
+                "value": "DepartScene"
+              },
+              "parameters": [
+                ""
+              ],
+              "subInstructions": []
+            }
+          ],
+          "actions": [],
+          "events": [
+            {
+              "colorB": 228,
+              "colorG": 176,
+              "colorR": 74,
+              "creationTime": 0,
+              "disabled": false,
+              "folded": false,
+              "name": "Establish websocket connection",
+              "source": "",
+              "type": "BuiltinCommonInstructions::Group",
+              "events": [
+                {
+                  "disabled": false,
+                  "folded": false,
+                  "type": "BuiltinCommonInstructions::JsCode",
+                  "inlineCode": "runtimeScene.ws = new WebSocket(\"ws://localhost:5000/ws\");\nconst id = Math.floor(Math.random() * Math.floor(100000))\nruntimeScene.player_id = id\nruntimeScene.delayedEvents = []\n\nruntimeScene.ws.onopen = function (event) {\n    const data = {\n        command: \"NEW_PLAYER\",\n        player_id: runtimeScene.player_id,\n        data: {\n            x: 300,\n            y: 300\n        }\n    }\n    setTimeout(() => {\n        runtimeScene.ws.send(JSON.stringify(data))\n    }, 500); \n};\n\nruntimeScene.ws.onmessage = function (event) {\n    const e = JSON.parse(event.data)\n    switch (e.command) {\n        case \"NEW_PLAYER\":\n            newPlayer(e)\n            break;\n        case \"MOVEMENT\":\n            movement(e)\n            break;\n        case \"REFRESH_PLAYER\":\n            refreshPlayers(e)\n            break;\n        default:\n            console.log(\"unknown command: \" + e.command)\n    }\n}\n\nfunction newPlayer(event) {\n    const p = createPlayer(event)\n    if (runtimeScene.player_id !== p.player_id) {\n        p.setColor(\"255;100;100\")\n        // New player, re-send my player's data\n        const o = runtimeScene.getObjects(\"player\").find((o) => o.player_id === runtimeScene.player_id)\n        const update = {\n            command: \"REFRESH_PLAYER\",\n            player_id: runtimeScene.player_id,\n            data: {\n                x: o.getX(),\n                y: o.getY()\n            }\n        }\n        runtimeScene.ws.send(JSON.stringify(update))\n    }\n}\n\nfunction refreshPlayers(event) {\n    const o = runtimeScene.getObjects(\"player\").find((o) => o.player_id === event.player_id)\n    if (typeof o === \"undefined\") {\n        const p = createPlayer(event)\n        p.setColor(\"255;100;100\")\n    }\n}\n\nfunction createPlayer(event) {\n    const player = runtimeScene.createObject(\"player\")\n    player.setX(event.data.x)\n    player.setY(event.data.y)\n    player.player_id = event.player_id\n    player.positions = []\n    return player\n}\n\nfunction movement(event) {\n    const o = runtimeScene.getObjects(\"player\").find((o) => o.player_id === event.player_id)\n    if (typeof o === \"undefined\") {\n        return\n    }\n\n    o.setX(event.data.x)\n    o.setY(event.data.y)\n}",
+                  "parameterObjects": "",
+                  "useStrict": true
+                }
+              ],
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "colorB": 228,
+          "colorG": 176,
+          "colorR": 74,
+          "creationTime": 0,
+          "disabled": false,
+          "folded": false,
+          "name": "Player movement",
+          "source": "",
+          "type": "BuiltinCommonInstructions::Group",
+          "events": [
+            {
+              "disabled": false,
+              "folded": false,
+              "type": "BuiltinCommonInstructions::JsCode",
+              "inlineCode": "const input = runtimeScene._runtimeGame.getInputManager()\nconst player = runtimeScene.getObjects(\"player\").find((o) => o.player_id === runtimeScene.player_id)\n\nif (typeof player === \"undefined\") {\n    return \n}\n\nconst movementSpeed = 0.33 * runtimeScene.getTimeManager().getElapsedTime()\n\nlet x = player.getX()\nlet y = player.getY()\nlet moved = false\n\nif (input.isKeyPressed(37)) {\n    moved = true\n    x -= movementSpeed\n}\n\nif (input.isKeyPressed(39)) {\n    moved = true\n    x += movementSpeed\n}\n\nif (input.isKeyPressed(38)) {\n    moved = true\n    y -= movementSpeed\n}\n\nif (input.isKeyPressed(40)) {\n    moved = true\n    y += movementSpeed\n}\n\nif (moved === false) {\n    return\n}\n\nconst update = {\n        command: \"MOVEMENT\",\n        player_id: runtimeScene.player_id,\n        data: {\n            x: x,\n            y: y\n        }\n}\nruntimeScene.ws.send(JSON.stringify(update))",
+              "parameterObjects": "",
+              "useStrict": true
+            }
+          ],
+          "parameters": []
+        }
+      ],
+      "layers": [
+        {
+          "name": "",
+          "visibility": true,
+          "cameras": [
+            {
+              "defaultSize": true,
+              "defaultViewport": true,
+              "height": 0,
+              "viewportBottom": 1,
+              "viewportLeft": 0,
+              "viewportRight": 1,
+              "viewportTop": 0,
+              "width": 0
+            }
+          ],
+          "effects": []
+        }
+      ],
+      "behaviorsSharedData": [
+        {
+          "name": "Tween",
+          "type": "Tween::TweenBehavior"
+        }
+      ]
+    },
+    {
+      "b": 139,
+      "disableInputWhenNotFocused": true,
+      "mangledName": "Client_32Prediction",
+      "name": "Client Prediction",
+      "oglFOV": 90,
+      "oglZFar": 500,
+      "oglZNear": 1,
+      "r": 50,
+      "standardSortMethod": true,
+      "stopSoundsOnStartup": true,
+      "title": "",
+      "v": 130,
+      "uiSettings": {
+        "grid": false,
+        "gridB": 255,
+        "gridG": 180,
+        "gridHeight": 32,
+        "gridOffsetX": 0,
+        "gridOffsetY": 0,
+        "gridR": 158,
+        "gridWidth": 32,
+        "snap": true,
+        "windowMask": false,
+        "zoomFactor": 1
+      },
+      "objectsGroups": [],
+      "variables": [],
+      "instances": [],
+      "objects": [
+        {
+          "name": "player",
+          "tags": "",
+          "type": "Sprite",
+          "updateIfNotVisible": false,
+          "variables": [],
+          "behaviors": [
+            {
+              "name": "Tween",
+              "type": "Tween::TweenBehavior"
+            }
+          ],
+          "animations": [
+            {
+              "name": "NewObject",
+              "useMultipleDirections": false,
+              "directions": [
+                {
+                  "looping": false,
+                  "timeBetweenFrames": 0.08,
+                  "sprites": [
+                    {
+                      "hasCustomCollisionMask": false,
+                      "image": "NewObject-1.png",
+                      "points": [],
+                      "originPoint": {
+                        "name": "origine",
+                        "x": 0,
+                        "y": 0
+                      },
+                      "centerPoint": {
+                        "automatic": true,
+                        "name": "centre",
+                        "x": 0,
+                        "y": 0
+                      },
+                      "customCollisionMask": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "disabled": false,
+          "folded": false,
+          "type": "BuiltinCommonInstructions::Standard",
+          "conditions": [
+            {
+              "type": {
+                "inverted": false,
+                "value": "DepartScene"
+              },
+              "parameters": [
+                ""
+              ],
+              "subInstructions": []
+            }
+          ],
+          "actions": [],
+          "events": [
+            {
+              "colorB": 228,
+              "colorG": 176,
+              "colorR": 74,
+              "creationTime": 0,
+              "disabled": false,
+              "folded": false,
+              "name": "Establish websocket connection",
+              "source": "",
+              "type": "BuiltinCommonInstructions::Group",
+              "events": [
+                {
+                  "disabled": false,
+                  "folded": false,
+                  "type": "BuiltinCommonInstructions::JsCode",
+                  "inlineCode": "runtimeScene.ws = new WebSocket(\"ws://localhost:5000/ws\");\nconst id = Math.floor(Math.random() * Math.floor(100000))\nruntimeScene.player_id = id\nruntimeScene.delayedEvents = []\n\nruntimeScene.ws.onopen = function (event) {\n    const data = {\n        command: \"NEW_PLAYER\",\n        player_id: runtimeScene.player_id,\n        data: {\n            x: 300,\n            y: 300\n        }\n    }\n    setTimeout(() => {\n        runtimeScene.ws.send(JSON.stringify(data))\n    }, 500); \n};\n\nruntimeScene.ws.onmessage = function (event) {\n    const e = JSON.parse(event.data)\n    switch (e.command) {\n        case \"NEW_PLAYER\":\n            newPlayer(e)\n            break;\n        case \"MOVEMENT\":\n            movement(e)\n            break;\n        case \"REFRESH_PLAYER\":\n            refreshPlayers(e)\n            break;\n        default:\n            console.log(\"unknown command: \" + e.command)\n    }\n}\n\nfunction newPlayer(event) {\n    const p = createPlayer(event)\n    if (runtimeScene.player_id !== p.player_id) {\n        p.setColor(\"255;100;100\")\n        // New player, re-send my player's data\n        const o = runtimeScene.getObjects(\"player\").find((o) => o.player_id === runtimeScene.player_id)\n        const update = {\n            command: \"REFRESH_PLAYER\",\n            player_id: runtimeScene.player_id,\n            data: {\n                x: o.getX(),\n                y: o.getY()\n            }\n        }\n        runtimeScene.ws.send(JSON.stringify(update))\n    }\n}\n\nfunction refreshPlayers(event) {\n    const o = runtimeScene.getObjects(\"player\").find((o) => o.player_id === event.player_id)\n    if (typeof o === \"undefined\") {\n        const p = createPlayer(event)\n        p.setColor(\"255;100;100\")\n    }\n}\n\nfunction createPlayer(event) {\n    const player = runtimeScene.createObject(\"player\")\n    player.setX(event.data.x)\n    player.setY(event.data.y)\n    player.player_id = event.player_id\n    player.positions = []\n    return player\n}\n\nfunction movement(event) {\n    // We're using client-side prediction, don't update the player's own character\n    if (runtimeScene.player_id === event.player_id) {\n        return\n    }\n\n    const o = runtimeScene.getObjects(\"player\").find((o) => o.player_id === event.player_id)\n    if (typeof o === \"undefined\") {\n        return\n    }\n\n    o.setX(event.data.x)\n    o.setY(event.data.y)\n}",
+                  "parameterObjects": "",
+                  "useStrict": true
+                }
+              ],
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "colorB": 228,
+          "colorG": 176,
+          "colorR": 74,
+          "creationTime": 0,
+          "disabled": false,
+          "folded": false,
+          "name": "Player movement",
+          "source": "",
+          "type": "BuiltinCommonInstructions::Group",
+          "events": [
+            {
+              "disabled": false,
+              "folded": false,
+              "type": "BuiltinCommonInstructions::JsCode",
+              "inlineCode": "const input = runtimeScene._runtimeGame.getInputManager()\nconst player = runtimeScene.getObjects(\"player\").find((o) => o.player_id === runtimeScene.player_id)\n\nif (typeof player === \"undefined\") {\n    return \n}\n\nconst movementSpeed = 0.33 * runtimeScene.getTimeManager().getElapsedTime()\n\nlet x = player.getX()\nlet y = player.getY()\nlet moved = false\n\nif (input.isKeyPressed(37)) {\n    moved = true\n    x -= movementSpeed\n}\n\nif (input.isKeyPressed(39)) {\n    moved = true\n    x += movementSpeed\n}\n\nif (input.isKeyPressed(38)) {\n    moved = true\n    y -= movementSpeed\n}\n\nif (input.isKeyPressed(40)) {\n    moved = true\n    y += movementSpeed\n}\n\nif (moved === false) {\n    return\n}\n\nplayer.setX(x)\nplayer.setY(y)\n\nconst update = {\n        command: \"MOVEMENT\",\n        player_id: runtimeScene.player_id,\n        data: {\n            x: x,\n            y: y\n        }\n}\nruntimeScene.ws.send(JSON.stringify(update))",
+              "parameterObjects": "",
+              "useStrict": true
+            }
+          ],
+          "parameters": []
+        }
+      ],
+      "layers": [
+        {
+          "name": "",
+          "visibility": true,
+          "cameras": [
+            {
+              "defaultSize": true,
+              "defaultViewport": true,
+              "height": 0,
+              "viewportBottom": 1,
+              "viewportLeft": 0,
+              "viewportRight": 1,
+              "viewportTop": 0,
+              "width": 0
+            }
+          ],
+          "effects": []
+        }
+      ],
+      "behaviorsSharedData": [
+        {
+          "name": "Tween",
+          "type": "Tween::TweenBehavior"
+        }
+      ]
+    },
+    {
       "b": 255,
       "disableInputWhenNotFocused": true,
-      "mangledName": "Game",
-      "name": "Game",
+      "mangledName": "Lag_32Compensation",
+      "name": "Lag Compensation",
       "oglFOV": 90,
       "oglZFar": 500,
       "oglZNear": 1,
@@ -241,7 +575,7 @@
           "colorR": 74,
           "creationTime": 0,
           "disabled": false,
-          "folded": true,
+          "folded": false,
           "name": "Movement update",
           "source": "",
           "type": "BuiltinCommonInstructions::Group",
